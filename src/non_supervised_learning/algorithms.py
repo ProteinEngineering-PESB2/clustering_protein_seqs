@@ -205,7 +205,6 @@ class Algorithm(object):
         min_cluster_size=None,
         algorithm="auto",
         leaf_size=30,
-        memory=None,
         n_jobs=-1):
 
         optics_instance = OPTICS(
@@ -220,8 +219,7 @@ class Algorithm(object):
             predecessor_correction=predecessor_correction,
             min_cluster_size=min_cluster_size,
             algorithm=algorithm,
-            leaf_size=leaf_size,
-            memory=memory)
+            leaf_size=leaf_size)
 
         optics_instance.fit(dataset)
         return optics_instance

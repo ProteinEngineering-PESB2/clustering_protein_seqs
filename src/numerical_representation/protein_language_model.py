@@ -20,6 +20,9 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 
+import torch
+from tape import ProteinBertModel, UniRepModel, TAPETokenizer
+
 class UsingBioembeddings(object):
 
     def __init__(
@@ -71,7 +74,6 @@ class UsingBioembeddings(object):
 
     def apply_esme(self):
         return self.__apply_embedding(ESMEmbedder)
-
 
     def apply_fasttext(self):
         return self.__apply_embedding(FastTextEmbedder)
@@ -141,3 +143,35 @@ class UsingBioembeddings(object):
         if self.is_reduced == True:
             self.__reducing()
         return self.parse_output()
+
+
+class UsingTape:
+    def __init__(self, dataset, column_id, column_seq):        
+        self.dataset = dataset
+        self.column_id = column_id
+        self.column_seq = column_seq
+
+    def __encoding_sequences(self, model, tokenizer):
+        pool_encoding = []
+        for index in self.dataset.index:
+            sequence = str(self.dataset[self.column_seq][index])
+            token_ids = torch.tensor([tokenizer.encode(sequence)])
+            output = model(token_ids)
+            pool_encoding.append(output[1])
+        return pool_encoding
+    
+    def apply_bert_model(self, vocab='iupac', config_dic='bert-base'):
+        model = ProteinBertModel.from_pretrained(config_dic)
+        tokenizer = TAPETokenizer(vocab=vocab)
+        return self.__encoding_sequences(
+            model=model,
+            tokenizer=tokenizer
+        )
+
+    def apply_unirep_model(self, vocab='unirep', config_dic='babbler-1900'):
+        model = UniRepModel.from_pretrained(config_dic)
+        tokenizer = TAPETokenizer(vocab=vocab)
+        return self.__encoding_sequences(
+            model=model,
+            tokenizer=tokenizer
+        )
